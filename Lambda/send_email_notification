@@ -1,0 +1,22 @@
+import boto3
+import json
+
+def lambda_handler(event, context):
+    # Инициализация клиентов для S3 и SNS
+    sns = boto3.client('sns')
+    
+    # Получаем output_key из события
+    output_key = event.get('output_key', 'No output key provided')
+    
+    # Формируем сообщение для SNS
+    message = f"Sentiment analysis pipeline completed. Output saved to: {output_key}"
+    
+    # Публикуем сообщение в SNS
+    topic_arn = 'arn:aws:sns:us-east-1:058264093078:idk'
+    sns.publish(
+        TopicArn=topic_arn,
+        Message=message,
+        Subject="Sentiment Analysis Report"
+    )
+    
+    return {"status": "notified", "s3_location": output_key}

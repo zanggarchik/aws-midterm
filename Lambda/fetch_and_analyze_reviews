@@ -1,0 +1,76 @@
+import json
+import requests
+import boto3
+import uuid
+
+def lambda_handler(event, context):
+    """
+    Обработчик Lambda для получения отзывов и их анализа через API на EC2.
+    
+    :param event: Содержит данные, переданные в Lambda (например, отзывы для анализа).
+    :param context: Информация о контексте вызова Lambda.
+    :return: Результат анализа настроений в формате JSON, путь к файлу в S3.
+    """
+    # Получаем список отзывов из события
+    reviews = event.get('reviews', [])
+    
+    if not reviews:
+        return {
+            'statusCode': 400,
+            'body': json.dumps('Error: No reviews provided')
+        }
+    
+    # URL API на EC2, где будет выполняться анализ
+    api_url = "http://34.203.214.138:5000/analyze_sentiment"  # Замените на ваш публичный IP
+
+    # Вызываем функцию для получения и анализа отзывов
+    analyzed_reviews = fetch_and_analyze_reviews(api_url, reviews)
+
+    # Сохраняем результаты в S3
+    s3 = boto3.client('s3')
+    bucket_name = 'zanggar'  # Укажите ваш S3 бакет
+    file_name = f"technodom_reviews/output/{str(uuid.uuid4())}_sentiment_output.json"  # Уникальное имя файла для результатов
+
+    # Сохраняем данные в S3
+    s3.put_object(
+        Bucket=bucket_name,
+        Key=file_name,
+        Body=json.dumps(analyzed_reviews)
+    )
+    
+    # Формируем путь к файлу в S3
+    output_key = f"s3://{bucket_name}/{file_name}"
+
+    # Возвращаем результат для передачи в следующий шаг
+    return {
+        "output_key": output_key  # Передаем путь к файлу в S3
+    }
+
+def fetch_and_analyze_reviews(api_url, reviews):
+    """
+    Получить и проанализировать отзывы, отправив их на API для анализа настроений.
+    
+    :param api_url: URL API на EC2.
+    :param reviews: Список текстов отзывов для анализа.
+    :return: Список с результатами анализа настроений.
+    """
+    results = []
+
+    for review in reviews:
+        # Отправляем POST-запрос к API на EC2 для анализа настроений
+        response = requests.post(api_url, json={'text': review})
+        
+        if response.status_code == 200:
+            sentiment = response.json()
+            results.append({
+                'review': review,
+                'sentiment': sentiment[0]['label'],  # Получаем метку настроения, например "POSITIVE" или "NEGATIVE"
+            })
+        else:
+            results.append({
+                'review': review,
+                'sentiment': 'Error',
+                'message': response.text
+            })
+
+    return results

@@ -21,7 +21,7 @@ def lambda_handler(event, context):
         }
     
     # URL API на EC2, где будет выполняться анализ
-    api_url = "http://34.203.214.138:5000/analyze_sentiment"  # Замените на ваш публичный IP
+    api_url = "http://<YOUR EC2 IP>:5000/analyze_sentiment"  # Замените на ваш публичный IP
 
     # Вызываем функцию для получения и анализа отзывов
     analyzed_reviews = fetch_and_analyze_reviews(api_url, reviews)

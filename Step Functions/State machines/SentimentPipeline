@@ -1,0 +1,27 @@
+{
+  "Comment": "Sentiment Analysis Pipeline",
+  "StartAt": "AnalyzeSentiment",
+  "States": {
+    "AnalyzeSentiment": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:058264093078:function:fetch_and_analyze_reviews",
+      "QueryLanguage": "JSONata",
+      "Arguments": {
+        "reviews": [
+          "I love the product! It's amazing.",
+          "Very bad experience, will not buy again.",
+          "Great customer service, will recommend to others."
+        ]
+      },
+      "Next": "Notify"
+    },
+    "Notify": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:058264093078:function:send_email_notification",
+      "Parameters": {
+        "output_key.$": "$.output_key"
+      },
+      "End": true
+    }
+  }
+}

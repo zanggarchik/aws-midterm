@@ -1,4 +1,3 @@
-
 ```
 cd ЕС2
 cd bonus
@@ -19,3 +18,7 @@ You should change `fetch_and_analyze_reviews` line
 api_url = "http://<YOUR EC2 IP>:5000/analyze_sentiment"  # Замените на ваш публичный IP
 ```
 Change `<YOUR EC2 IP>` to your EC2 IP
+---
+![image](https://github.com/user-attachments/assets/ce1364dc-20f1-48e1-a7a8-fe2173a09611)
+
+After that you should write `/start_pipeline`
